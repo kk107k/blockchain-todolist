@@ -6,7 +6,7 @@ import * as Constants from "../Utils/config";
 function App() {
   const [task, setTask] = useState("");
   const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(false); // State to track loading status
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const connectToMetamask = async () => {
@@ -14,6 +14,7 @@ function App() {
         if (window.ethereum) {
           const provider = new ethers.providers.Web3Provider(window.ethereum);
           const signer = provider.getSigner();
+          console.log("Connected to Metamask")
           const contractInstance = new ethers.Contract(Constants.contractAddress, Constants.contractAbi, signer);
           const tasks = await contractInstance.getAllTasks();
           setTasks(tasks);
@@ -30,7 +31,7 @@ function App() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setLoading(true); // Set loading to true when starting the submission
+    setLoading(true);
     const response = await fetch("/api/addTask", {
       method: "POST",
       headers: {
@@ -43,18 +44,40 @@ function App() {
       const error = await response.json();
       console.error(error);
     } else {
-      window.location.reload(); // Refresh the page
+      window.location.reload();
     }
 
-    setLoading(false); // Set loading to false after operation completes
+    setLoading(false);
   };
 
   const handleChange = (event) => {
     setTask(event.target.value);
   };
+  
+  const removeTask = async (index) => {
+    setLoading(true);
+    const response = await fetch('/api/removeTask', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(index)
+    });
+  
+    if (!response.ok) {
+      const error = await response.json();
+      console.log(error);
+    } else {
+      // Filter out the removed task from the tasks array
+      setTasks(prevTasks => prevTasks.filter((_, i) => i !== index));
+    }
+  
+    setLoading(false);
+  };
+  
 
   const changeTaskStatus = async (taskId) => {
-    setLoading(true); // Set loading to true when starting the status change
+    setLoading(true);
     const response = await fetch('/api/changeStatus', {
       method: 'POST',
       headers: {
@@ -67,15 +90,14 @@ function App() {
       const error = await response.json();
       console.log(error);
     } else {
-      window.location.reload(); // Refresh the page
+      window.location.reload();
     }
 
-    setLoading(false); // Set loading to false after operation completes
+    setLoading(false);
   };
 
   return (
     <div style={{ position: "relative" }}>
-      {/* Spinner container */}
       {loading && (
         <div className={styles.spinnerContainer}>
           <div className={styles.spinner}></div>
@@ -99,6 +121,7 @@ function App() {
               <th>Task Description</th>
               <th>Task Status</th>
               <th>Action</th>
+              <th>Remove</th>
             </tr>
           </thead>
           <tbody>
@@ -108,7 +131,13 @@ function App() {
                   <td>{index + 1}</td>
                   <td>{task.desc}</td>
                   <td>{task.status === 0 ? "Incomplete" : "Complete"}</td>
-                  <td>{task.status === 0 ? <button className={styles.button} onClick={() => changeTaskStatus(index)}>Complete</button> : null}</td>
+                  <td >
+                {task.status === 0 ? <button className={styles.button} onClick={() => changeTaskStatus(index)}>Click me</button> : null}
+                
+                </td>
+                  <td>
+                    <button className={styles.button} onClick={() => removeTask(index)}>Remove</button>
+                  </td>
                 </tr>
               ))
             }
