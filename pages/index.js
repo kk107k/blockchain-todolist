@@ -60,6 +60,7 @@ function App() {
   }
 
 
+
   return (
     <div>
       <div className={styles.container}>
@@ -72,7 +73,31 @@ function App() {
         </form>
 
       </div>
-      
+      <div className={styles.container}>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th>Task ID</th>
+              <th>Task Description</th>
+              <th>Task Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              tasks.map((task, index) => {
+                return (
+                  <tr key={index}>
+                    <td>{index + 1}</td>
+                    <td>{task.desc}</td>
+                    <td>{task.status === 0 ?  "Incomplete" : "Complete"}</td>
+                  </tr>
+                )
+              })
+            }
+          </tbody>
+        </table>
+
+      </div>
     </div>
   )
 }
